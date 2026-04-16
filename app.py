@@ -11,13 +11,23 @@ st.set_page_config(page_title="Enhanced Q&A Chatbot", page_icon="💬", layout="
 
 load_dotenv()
 
+# Fetch secret securely, prioritizing Streamlit Cloud secrets then falling back to local .env
+def get_secret(key_name, default=""):
+    try:
+        # Streamlit secrets dict checks
+        if key_name in st.secrets:
+            return st.secrets[key_name]
+    except Exception:
+        pass
+    return os.getenv(key_name, default)
+
 ## Langsmith Tracking
-os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY", "")
+os.environ["LANGCHAIN_API_KEY"] = get_secret("LANGCHAIN_API_KEY")
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = "Simple Q&A Chatbot With GROQ"
 
-# We will set GROQ_API_KEY dynamically from sidebar or .env
-env_api_key = os.getenv("GROQ_API_KEY", "")
+# We will set GROQ_API_KEY dynamically from sidebar, secrets, or .env
+env_api_key = get_secret("GROQ_API_KEY")
 
 ## Prompt Template
 prompt = ChatPromptTemplate.from_messages(
