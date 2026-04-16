@@ -52,8 +52,16 @@ st.markdown("Welcome! Ask me anything, and I'll generate a response using the se
 with st.sidebar:
     st.header("Settings")
     
-    # Ask for Groq API KEY
-    api_key = st.text_input("Enter your Groq API Key:", type="password", value=env_api_key)
+    # Ask for Groq API KEY or use Admin Key
+    use_admin_key = st.checkbox("Use Default Admin API Key", value=False)
+    if use_admin_key:
+        api_key = env_api_key
+        if api_key:
+            st.success("Using Admin API Key (hidden from view).")
+        else:
+            st.warning("Admin API Key is not configured.")
+    else:
+        api_key = st.text_input("Enter your Groq API Key:", type="password")
     
     ## Select the Groq model
     engine = st.selectbox("Select Groq model", ["groq:qwen/qwen3-32b", "groq:openai/gpt-oss-120b", "groq:llama-3.1-8b-instant"])
