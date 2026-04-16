@@ -53,8 +53,10 @@ with st.sidebar:
     st.header("Settings")
     
     # Ask for Groq API KEY or use Admin Key
-    use_admin_key = st.checkbox("Use Default Admin API Key", value=False)
+    use_admin_key = st.checkbox("Use Default Admin API Key", value=True)
     if use_admin_key:
+        # Show a disabled placeholder to explicitly tell users they can enter their own later
+        api_key_input = st.text_input("Enter your Groq API Key:", type="password", disabled=True, help="Uncheck 'Use Default Admin API Key' above if you want to enter your own personal key.")
         api_key = env_api_key
         if api_key:
             st.success("Using Admin API Key (hidden from view).")
@@ -64,7 +66,7 @@ with st.sidebar:
         api_key = st.text_input("Enter your Groq API Key:", type="password")
     
     ## Select the Groq model
-    engine = st.selectbox("Select Groq model", ["groq:qwen/qwen3-32b", "groq:openai/gpt-oss-120b", "groq:llama-3.1-8b-instant"])
+    engine = st.selectbox("Select Groq model", ["groq:qwen/qwen3-32b", "groq:openai/gpt-oss-120b", "groq:llama-3.1-8b-instant"], index=1)
     
     ## Advanced parameter settings
     with st.expander("Advanced Settings", expanded=False):
