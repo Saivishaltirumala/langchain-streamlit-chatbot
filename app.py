@@ -7,14 +7,88 @@ import os
 from dotenv import load_dotenv
 
 # Set up page config FIRST before any other st commands
-st.set_page_config(page_title="Enhanced Q&A Chatbot", page_icon="💬", layout="wide")
+st.set_page_config(page_title="AI Chatbot Assistant", page_icon="⚡", layout="wide")
 
 load_dotenv()
+
+# --- CSS INJECTION FOR PREMIUM DARK "INDIGO/CYBER" THEME ---
+custom_css = """
+<style>
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+html, body, [class*="css"]  {
+    font-family: 'Inter', sans-serif;
+}
+
+/* App Background */
+.stApp {
+    background-color: #0f172a;
+}
+
+/* Sidebar Background */
+[data-testid="stSidebar"] {
+    background-color: #1a1c24 !important;
+    border-right: 1px solid #2d3748;
+}
+
+/* Top Gradient Header */
+.custom-title {
+    background: linear-gradient(135deg, #8b5cf6 0%, #38bdf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    font-size: 3rem;
+    margin-bottom: 0rem;
+    padding-bottom: 0rem;
+}
+
+.custom-subtitle {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-top: 0.2rem;
+    margin-bottom: 2rem;
+}
+
+/* Secondary Headers */
+h1, h2, h3, h4, h5, h6 {
+    color: #f8fafc !important;
+}
+p, span, label {
+    color: #cbd5e1 !important;
+}
+
+/* Chat Input Styling */
+[data-testid="stChatInput"] {
+    border-radius: 12px;
+    border: 1px solid #334155 !important;
+    background-color: #1e293b !important;
+}
+[data-testid="stChatInput"] textarea {
+    color: #ffffff !important;
+}
+
+/* General Input Boxes */
+.stTextInput input, .stSelectbox select, .stSelectbox div {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #f8fafc !important;
+    border-radius: 8px !important;
+}
+
+/* Sidebar Dividers */
+hr {
+    border-color: #334155 !important;
+}
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
+
 
 # Fetch secret securely, prioritizing Streamlit Cloud secrets then falling back to local .env
 def get_secret(key_name, default=""):
     try:
-        # Streamlit secrets dict checks
         if key_name in st.secrets:
             return st.secrets[key_name]
     except Exception:
@@ -32,9 +106,9 @@ env_api_key = get_secret("GROQ_API_KEY")
 ## Prompt Template
 prompt = ChatPromptTemplate.from_messages(
     [
-        ("system", "You are a helpful assistant. Please respond to the user queries accurately and clearly."),
+        ("system", "You are a highly capable AI assistant. Please respond to user queries accurately, professionally, and clearly."),
         MessagesPlaceholder(variable_name="chat_history"),
-        ("user", "Question: {question}")
+        ("user", "{question}")
     ]
 )
 
@@ -45,36 +119,41 @@ def build_chain(engine, temperature, max_tokens):
     return chain
 
 ## Title and styling
-st.title("💬 Enhanced Q&A Chatbot With Groq")
-st.markdown("Welcome! Ask me anything, and I'll generate a response using the selected Groq model.")
+st.markdown('<h1 class="custom-title">⚡ AI Assistant Interface</h1>', unsafe_allow_html=True)
+st.markdown('<p class="custom-subtitle">Powered by advanced Groq open-source models.</p>', unsafe_allow_html=True)
 
 ## Sidebar for settings
 with st.sidebar:
-    st.header("Settings")
+    st.markdown("### ⚙️ Control Panel")
     
-    # Ask for Groq API KEY or use Admin Key
-    use_admin_key = st.checkbox("Use Default Admin API Key", value=True)
-    if use_admin_key:
-        # Show a disabled placeholder to explicitly tell users they can enter their own later
-        api_key_input = st.text_input("Enter your Groq API Key:", type="password", disabled=True, help="Uncheck 'Use Default Admin API Key' above if you want to enter your own personal key.")
-        api_key = env_api_key
-        if api_key:
-            st.success("Using Admin API Key (hidden from view).")
+    with st.expander("🔐 Authentication", expanded=True):
+        use_admin_key = st.checkbox("Use Default Admin Key", value=True)
+        if use_admin_key:
+            api_key_input = st.text_input("Groq API Key:", type="password", disabled=True, prompt="Disabled")
+            api_key = env_api_key
+            if api_key:
+                st.success("Admin Key Active ✓")
+            else:
+                st.warning("Admin Key missing.")
         else:
-            st.warning("Admin API Key is not configured.")
-    else:
-        api_key = st.text_input("Enter your Groq API Key:", type="password")
+            api_key = st.text_input("Groq API Key:", type="password")
     
+    st.markdown("### 🧠 Model Preferences")
     ## Select the Groq model
-    engine = st.selectbox("Select Groq model", ["groq:qwen/qwen3-32b", "groq:openai/gpt-oss-120b", "groq:llama-3.1-8b-instant"], index=1)
+    engine = st.selectbox("Engine", ["groq:qwen/qwen3-32b", "groq:openai/gpt-oss-120b", "groq:llama-3.1-8b-instant"], index=1)
     
     ## Advanced parameter settings
-    with st.expander("Advanced Settings", expanded=False):
+    with st.expander("🔧 Advanced Settings", expanded=False):
         temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.7, step=0.1)
         max_tokens = st.slider("Max Tokens", min_value=50, max_value=2000, value=150, step=50)
 
     st.divider()
-    if st.button("Clear Chat History", use_container_width=True):
+    
+    # Custom Github Review Button
+    st.link_button("⭐ Review App on GitHub", "https://github.com/Saivishaltirumala/langchain-streamlit-chatbot", use_container_width=True)
+    
+    st.divider()
+    if st.button("🗑️ Clear Chat Context", use_container_width=True, type="secondary"):
         st.session_state.messages = []
         st.rerun()
 
@@ -85,32 +164,43 @@ if api_key:
 # Initialize chat history in session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
+    # Add a welcoming system message dynamically as a visual affordance
+    st.session_state.messages.append({"role": "assistant", "content": "Welcome to the AI Assistant platform! I am securely connected and ready. Ask me anything!"})
+
+# User/Assistant custom avatars
+avatar_map = {
+    "user": "👤",
+    "assistant": "✨"
+}
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
+    with st.chat_message(message["role"], avatar=avatar_map.get(message["role"])):
         st.markdown(message["content"])
 
 # React to user input
-if user_input := st.chat_input("Go ahead and ask a question..."):
+if user_input := st.chat_input("Type your message here..."):
     if not api_key:
-        st.toast("Please enter your Groq API Key in the sidebar!", icon="⚠️")
-        st.error("Missing API Key. Please provide it to continue.")
+        st.toast("Please configure your Groq API Key in the sidebar or check 'Use Default Admin Key'.", icon="⚠️")
     else:
         # Display user message in chat message container
-        st.chat_message("user").markdown(user_input)
+        st.chat_message("user", avatar=avatar_map["user"]).markdown(user_input)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": user_input})
 
         # Display assistant response in chat message container
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar=avatar_map["assistant"]):
             try:
                 chain = build_chain(engine, temperature, max_tokens)
                 
                 # Format conversation history
                 chat_history = []
-                # Exclude the very last message since it's the current user_input
+                # Exclude the very last message since it's the current user_input, and the first intro message if it's the default
                 for msg in st.session_state.messages[:-1]:
+                    # Don't send our artificial welcoming message to the API context history to save tokens
+                    if msg["content"].startswith("Welcome to the AI Assistant platform"):
+                        continue
+                        
                     if msg["role"] == "user":
                         chat_history.append(HumanMessage(content=msg["content"]))
                     elif msg["role"] == "assistant":
@@ -123,4 +213,4 @@ if user_input := st.chat_input("Go ahead and ask a question..."):
                 # Add assistant response to chat history
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
             except Exception as e:
-                st.error(f"An error occurred: {e}")
+                st.error(f"An error occurred while communicating with the model: {e}")
