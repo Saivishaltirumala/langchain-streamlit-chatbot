@@ -21,37 +21,50 @@ html, body, [class*="css"]  {
     font-family: 'Inter', sans-serif;
 }
 
-/* App Background */
+/* App Background - Deepest slate almost black */
 .stApp {
-    background-color: #0f172a;
+    background-color: #020617;
 }
 
-/* Sidebar Background */
+/* Hide default streamlit header */
+header {
+    visibility: hidden;
+}
+
+/* Sidebar Background with gradient */
 [data-testid="stSidebar"] {
-    background-color: #1a1c24 !important;
-    border-right: 1px solid #2d3748;
+    background-color: #0f172a !important;
+    background-image: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
+    border-right: 1px solid #1e293b;
 }
 
-/* Top Gradient Header */
+/* Top Gradient Header Card */
+.custom-header-container {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid #4338ca;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    text-align: left;
+}
+
 .custom-title {
-    background: linear-gradient(135deg, #8b5cf6 0%, #38bdf8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #ffffff;
     font-weight: 800;
-    font-size: 3rem;
-    margin-bottom: 0rem;
-    padding-bottom: 0rem;
+    font-size: 2.2rem;
+    margin-bottom: 0.2rem;
+    margin-top: 0;
 }
 
 .custom-subtitle {
-    color: #94a3b8;
-    font-size: 1.1rem;
+    color: #a5b4fc;
+    font-size: 1rem;
     font-weight: 500;
-    margin-top: 0.2rem;
-    margin-bottom: 2rem;
+    margin: 0;
 }
 
-/* Secondary Headers */
+/* Secondary Headers in Sidebar */
 h1, h2, h3, h4, h5, h6 {
     color: #f8fafc !important;
 }
@@ -61,20 +74,77 @@ p, span, label {
 
 /* Chat Input Styling */
 [data-testid="stChatInput"] {
-    border-radius: 12px;
-    border: 1px solid #334155 !important;
-    background-color: #1e293b !important;
+    border-radius: 16px;
+    border: 1px solid #4338ca !important;
+    background-color: #1e1b4b !important;
+    box-shadow: 0 4px 15px rgba(67, 56, 202, 0.4);
 }
 [data-testid="stChatInput"] textarea {
     color: #ffffff !important;
 }
+[data-testid="stChatInput"] button {
+    background-color: #6366f1 !important;
+    color: white !important;
+    border-radius: 8px;
+}
 
-/* General Input Boxes */
-.stTextInput input, .stSelectbox select, .stSelectbox div {
+/* General Input Boxes in Sidebar */
+[data-testid="stTextInput"] input {
     background-color: #1e293b !important;
     border: 1px solid #334155 !important;
     color: #f8fafc !important;
     border-radius: 8px !important;
+}
+
+[data-baseweb="select"] > div {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #f8fafc !important;
+    border-radius: 8px !important;
+}
+
+/* Chat Bubbles - Assistant */
+[data-testid="stChatMessage"] {
+    background-color: #1e293b;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
+/* Chat Bubbles - User */
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
+    background-color: #312e81; /* Deep Indigo */
+    border: 1px solid #4338ca;
+}
+
+/* Remove default background colors from avatars inside the bubble */
+[data-testid="chatAvatarIcon-user"] {
+    background-color: transparent !important;
+}
+[data-testid="chatAvatarIcon-assistant"] {
+    background-color: transparent !important;
+}
+
+/* Code block matching Figma */
+pre {
+    background-color: #0f172a !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 8px !important;
+}
+
+/* Custom Buttons */
+.stButton button {
+    border-radius: 8px !important;
+    border: 1px solid #4338ca !important;
+    background-color: transparent !important;
+    color: #a5b4fc !important;
+    transition: all 0.2s ease;
+}
+.stButton button:hover {
+    background-color: #4338ca !important;
+    color: white !important;
 }
 
 /* Sidebar Dividers */
@@ -114,22 +184,26 @@ prompt = ChatPromptTemplate.from_messages(
 
 def build_chain(engine, temperature, max_tokens):
     llm = init_chat_model(engine, temperature=temperature, max_tokens=max_tokens)
-    output_parser = StrOutputParser()
-    chain = prompt | llm | output_parser
+    # We remove StrOutputParser so we can access chunk.response_metadata to check finish_reason
+    chain = prompt | llm
     return chain
 
-## Title and styling
-st.markdown('<h1 class="custom-title">⚡ AI Assistant Interface</h1>', unsafe_allow_html=True)
-st.markdown('<p class="custom-subtitle">Powered by advanced Groq open-source models.</p>', unsafe_allow_html=True)
+## Title and styling layout
+st.markdown("""
+<div class="custom-header-container">
+    <h1 class="custom-title">✨ Vishal Chatbot</h1>
+    <p class="custom-subtitle">Your Personalized AI Companion</p>
+</div>
+""", unsafe_allow_html=True)
 
 ## Sidebar for settings
 with st.sidebar:
     st.markdown("### ⚙️ Control Panel")
     
-    with st.expander("🔐 Authentication", expanded=True):
+    with st.expander("🔐 Authentication", expanded=False):
         use_admin_key = st.checkbox("Use Default Admin Key", value=True)
         if use_admin_key:
-            api_key_input = st.text_input("Groq API Key:", type="password", disabled=True, prompt="Disabled")
+            api_key_input = st.text_input("Groq API Key:", type="password", disabled=True, placeholder="Disabled")
             api_key = env_api_key
             if api_key:
                 st.success("Admin Key Active ✓")
@@ -145,7 +219,7 @@ with st.sidebar:
     ## Advanced parameter settings
     with st.expander("🔧 Advanced Settings", expanded=False):
         temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.7, step=0.1)
-        max_tokens = st.slider("Max Tokens", min_value=50, max_value=2000, value=150, step=50)
+        max_tokens = st.slider("Max Tokens", min_value=50, max_value=4000, value=1000, step=50)
 
     st.divider()
     
@@ -153,7 +227,7 @@ with st.sidebar:
     st.link_button("⭐ Review App on GitHub", "https://github.com/Saivishaltirumala/langchain-streamlit-chatbot", use_container_width=True)
     
     st.divider()
-    if st.button("🗑️ Clear Chat Context", use_container_width=True, type="secondary"):
+    if st.button("🗑️ Clear Chat Context", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
@@ -165,12 +239,13 @@ if api_key:
 if "messages" not in st.session_state:
     st.session_state.messages = []
     # Add a welcoming system message dynamically as a visual affordance
-    st.session_state.messages.append({"role": "assistant", "content": "Welcome to the AI Assistant platform! I am securely connected and ready. Ask me anything!"})
+    st.session_state.messages.append({"role": "assistant", "content": "Hello, I'm **Vishal Chatbot**! ✨ I am your personalized AI assistant, ready to help you analyze, troubleshoot, and build. How can I accelerate your work today?"})
 
 # User/Assistant custom avatars
+# Ensure you save your image file as "gibli_avatar.png" in the 1-QA-ChatBot folder!
 avatar_map = {
-    "user": "👤",
-    "assistant": "✨"
+    "user": "gibli_avatar.png",
+    "assistant": "🤖"
 }
 
 # Display chat messages from history on app rerun
@@ -179,7 +254,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # React to user input
-if user_input := st.chat_input("Type your message here..."):
+if user_input := st.chat_input("Type your message..."):
     if not api_key:
         st.toast("Please configure your Groq API Key in the sidebar or check 'Use Default Admin Key'.", icon="⚠️")
     else:
@@ -198,7 +273,7 @@ if user_input := st.chat_input("Type your message here..."):
                 # Exclude the very last message since it's the current user_input, and the first intro message if it's the default
                 for msg in st.session_state.messages[:-1]:
                     # Don't send our artificial welcoming message to the API context history to save tokens
-                    if msg["content"].startswith("Welcome to the AI Assistant platform"):
+                    if msg["content"].startswith("Hello, I'm **Vishal Chatbot**"):
                         continue
                         
                     if msg["role"] == "user":
@@ -206,9 +281,21 @@ if user_input := st.chat_input("Type your message here..."):
                     elif msg["role"] == "assistant":
                         chat_history.append(AIMessage(content=msg["content"]))
 
+                # Custom stream generator to intercept finish_reason and append warning
+                def generate_response():
+                    finish_reason = None
+                    for chunk in chain.stream({'question': user_input, 'chat_history': chat_history}):
+                        if hasattr(chunk, "response_metadata") and chunk.response_metadata:
+                            if "finish_reason" in chunk.response_metadata and chunk.response_metadata["finish_reason"]:
+                                finish_reason = chunk.response_metadata["finish_reason"]
+                        if chunk.content:
+                            yield chunk.content
+                    
+                    if finish_reason in ["length", "max_tokens"]:
+                        yield "\n\n> ⚠️ **Notice:** *This response was truncated due to the current Max Tokens limit. Please increase the Max Tokens slider in the Advanced Settings to see longer responses.*"
+
                 # Use st.write_stream to type out the response
-                response_stream = chain.stream({'question': user_input, 'chat_history': chat_history})
-                full_response = st.write_stream(response_stream)
+                full_response = st.write_stream(generate_response())
                 
                 # Add assistant response to chat history
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
