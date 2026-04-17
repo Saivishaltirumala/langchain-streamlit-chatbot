@@ -2,6 +2,17 @@
 
 This guide documents the exact steps taken to successfully deploy our Streamlit application to a Hugging Face Space using Docker and automated via GitHub Actions.
 
+## 0. Create a New Space on Hugging Face
+
+Before configuring the code, you must initialize the destination repository on Hugging Face:
+1. Log in to your [Hugging Face](https://huggingface.co/) account.
+2. Click on your profile picture in the top right corner and select **New Space** (or navigate to https://huggingface.co/new-space).
+3. **Space name:** Give your space a name (e.g., `langchain-streamlit-chatbot`).
+4. **License:** Select an appropriate license.
+5. **Select the Space SDK:** Choose **Docker**, then select the **Streamlit** template (or leave it blank).
+6. **Space hardware:** Keep the default "CPU basic".
+7. Click **Create space**.
+
 ## 1. Prepare Hugging Face Space Configuration (`README.md`)
 
 When a Hugging Face Space starts, it looks for a `README.md` file at the root of the repository. This file must contain specific YAML "frontmatter" to tell Hugging Face what the Space should use. 
