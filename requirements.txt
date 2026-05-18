@@ -7,3 +7,4 @@ langchain-google-genai
 langgraph
 langchain-anthropic
 streamlit
+httpx
